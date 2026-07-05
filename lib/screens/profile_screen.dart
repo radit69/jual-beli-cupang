@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+import '../data/favorites_manager.dart';
+import 'favorites_screen.dart';
 import 'login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final FavoritesManager _favoritesManager = FavoritesManager();
 
   @override
   Widget build(BuildContext context) {
@@ -140,40 +149,52 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FavoritesScreen(),
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          const Text(
-                            '12',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0D7377),
+                        ).then((_) {
+                          setState(() {});
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'FAVORITES',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade400,
-                              letterSpacing: 1,
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              '${_favoritesManager.favoritesCount}',
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0D7377),
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              'FAVORITES',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade400,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -264,7 +285,19 @@ class ProfileScreen extends StatelessWidget {
                         height: 1,
                         indent: 56,
                         color: Colors.grey.shade200),
-                    _buildMenuItem(Icons.favorite_outline, 'My Favorites'),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FavoritesScreen(),
+                          ),
+                        ).then((_) {
+                          setState(() {});
+                        });
+                      },
+                      child: _buildMenuItem(Icons.favorite_outline, 'My Favorites'),
+                    ),
                     Divider(
                         height: 1,
                         indent: 56,

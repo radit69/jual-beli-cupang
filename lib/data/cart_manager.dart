@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'fish_data.dart';
 
 class CartItem {
@@ -7,7 +8,7 @@ class CartItem {
   CartItem({required this.fish, this.quantity = 1});
 }
 
-class CartManager {
+class CartManager extends ChangeNotifier {
   static final CartManager _instance = CartManager._internal();
   factory CartManager() => _instance;
 
@@ -60,31 +61,36 @@ class CartManager {
     } else {
       _items.add(CartItem(fish: fish));
     }
+    notifyListeners();
   }
 
   void removeFish(Fish fish) {
     _items.removeWhere((item) => item.fish.name == fish.name);
+    notifyListeners();
   }
 
   void incrementQuantity(CartItem item) {
     item.quantity++;
+    notifyListeners();
   }
 
   void decrementQuantity(CartItem item) {
     if (item.quantity > 1) {
       item.quantity--;
+      notifyListeners();
     }
   }
 
-  double get subtotal {
-    double sum = 0;
+  int get subtotal {
+    int sum = 0;
     for (var item in _items) {
-      sum += (item.fish.price / 10000) * item.quantity;
+      sum += item.fish.price * item.quantity;
     }
     return sum;
   }
 
-  double get shipping => _items.isEmpty ? 0 : 15.0;
+  int get shipping => _items.isEmpty ? 0 : 15000;
 
-  double get total => subtotal + shipping;
+  int get total => subtotal + shipping;
 }
+

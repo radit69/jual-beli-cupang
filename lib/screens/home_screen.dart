@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import '../data/fish_data.dart';
+import '../data/favorites_manager.dart';
 import 'detail_screen.dart';
 
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final ValueChanged<String>? onCategorySelected;
+  const HomeScreen({super.key, this.onCategorySelected});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Set<int> favoritedIndices = {0}; // first fish is favorited by default
+  final FavoritesManager _favoritesManager = FavoritesManager();
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +81,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (widget.onCategorySelected != null) {
+                        widget.onCategorySelected!('All');
+                      }
+                    },
                     child: const Text(
                       'See All',
                       style: TextStyle(
@@ -175,34 +182,41 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildCategoryItem(IconData icon, String label) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
-      child: Column(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F4F8),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFD0D8E0)),
+      child: GestureDetector(
+        onTap: () {
+          if (widget.onCategorySelected != null) {
+            widget.onCategorySelected!(label);
+          }
+        },
+        child: Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F4F8),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFD0D8E0)),
+              ),
+              child: Icon(icon, color: const Color(0xFF0D1B4C), size: 26),
             ),
-            child: Icon(icon, color: const Color(0xFF0D1B4C), size: 26),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF333333),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildFishCard(Fish fish, int index) {
-    final isFav = favoritedIndices.contains(index);
+    final isFav = _favoritesManager.isFavorite(fish);
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -210,7 +224,9 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(
             builder: (context) => DetailScreen(fish: fish),
           ),
-        );
+        ).then((_) {
+          setState(() {});
+        });
       },
       child: Container(
         decoration: BoxDecoration(
@@ -247,11 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        if (isFav) {
-                          favoritedIndices.remove(index);
-                        } else {
-                          favoritedIndices.add(index);
-                        }
+                        _favoritesManager.toggleFavorite(fish);
                       });
                     },
                     child: Container(

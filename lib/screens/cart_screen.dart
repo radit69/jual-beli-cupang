@@ -268,7 +268,7 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                     // Price
                     Text(
-                      '\$${(item.fish.price / 10000).toStringAsFixed(2)}',
+                      'Rp ${_formatPrice(item.fish.price)}',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -319,7 +319,7 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
               Text(
-                '\$${_cartManager.subtotal.toStringAsFixed(2)}',
+                'Rp ${_formatPrice(_cartManager.subtotal)}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -340,7 +340,7 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
               Text(
-                '\$${_cartManager.shipping.toStringAsFixed(2)}',
+                'Rp ${_formatPrice(_cartManager.shipping)}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -367,7 +367,7 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
               Text(
-                '\$${_cartManager.total.toStringAsFixed(2)}',
+                'Rp ${_formatPrice(_cartManager.total)}',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -429,5 +429,19 @@ class _CartScreenState extends State<CartScreen> {
         ),
       ),
     );
+  }
+
+  String _formatPrice(int price) {
+    String priceStr = price.toString();
+    String result = '';
+    int count = 0;
+    for (int i = priceStr.length - 1; i >= 0; i--) {
+      result = priceStr[i] + result;
+      count++;
+      if (count % 3 == 0 && i != 0) {
+        result = '.$result';
+      }
+    }
+    return result;
   }
 }

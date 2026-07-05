@@ -1,21 +1,50 @@
 import 'package:flutter/material.dart';
 import '../data/fish_data.dart';
+import '../data/favorites_manager.dart';
 import 'detail_screen.dart';
 
+
 class CatalogScreen extends StatefulWidget {
-  const CatalogScreen({super.key});
+  final String initialFilter;
+  final ValueChanged<String>? onFilterChanged;
+
+  const CatalogScreen({
+    super.key,
+    this.initialFilter = 'All',
+    this.onFilterChanged,
+  });
 
   @override
   State<CatalogScreen> createState() => _CatalogScreenState();
 }
 
 class _CatalogScreenState extends State<CatalogScreen> {
-  String selectedFilter = 'All';
-  Set<int> favoritedIndices = {0};
-  final List<String> filters = ['All', 'Plakat', 'Halfmoon', 'Crowntail'];
+  late String selectedFilter;
+  final FavoritesManager _favoritesManager = FavoritesManager();
+  final List<String> filters = ['All', 'Plakat', 'Halfmoon', 'Crowntail', 'Giant', 'Others'];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedFilter = widget.initialFilter;
+  }
+
+  @override
+  void didUpdateWidget(CatalogScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialFilter != oldWidget.initialFilter) {
+      selectedFilter = widget.initialFilter;
+    }
+  }
 
   List<Fish> get filteredFish {
     if (selectedFilter == 'All') return fishList;
+    if (selectedFilter.toUpperCase() == 'OTHERS') {
+      final mainCategories = ['PLAKAT', 'HALFMOON', 'CROWNTAIL', 'GIANT'];
+      return fishList
+          .where((f) => !mainCategories.contains(f.category.toUpperCase()))
+          .toList();
+    }
     return fishList
         .where((f) => f.category.toUpperCase() == selectedFilter.toUpperCase())
         .toList();
@@ -100,6 +129,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       setState(() {
                         selectedFilter = filter;
                       });
+                      if (widget.onFilterChanged != null) {
+                        widget.onFilterChanged!(filter);
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -163,7 +195,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   Widget _buildFishCard(Fish fish, int index) {
-    final isFav = favoritedIndices.contains(index);
+    final isFav = _favoritesManager.isFavorite(fish);
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -171,7 +203,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
           MaterialPageRoute(
             builder: (context) => DetailScreen(fish: fish),
           ),
-        );
+        ).then((_) {
+          setState(() {});
+        });
       },
       child: Container(
         decoration: BoxDecoration(
@@ -208,11 +242,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        if (isFav) {
-                          favoritedIndices.remove(index);
-                        } else {
-                          favoritedIndices.add(index);
-                        }
+                        _favoritesManager.toggleFavorite(fish);
                       });
                     },
                     child: Container(

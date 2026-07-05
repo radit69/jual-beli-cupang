@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import '../data/fish_data.dart';
 import '../data/cart_manager.dart';
+import '../data/favorites_manager.dart';
 
-class DetailScreen extends StatelessWidget {
+class DetailScreen extends StatefulWidget {
   final Fish fish;
 
   const DetailScreen({super.key, required this.fish});
 
   @override
+  State<DetailScreen> createState() => _DetailScreenState();
+}
+
+class _DetailScreenState extends State<DetailScreen> {
+  final FavoritesManager _favoritesManager = FavoritesManager();
+
+  @override
   Widget build(BuildContext context) {
+    final fish = widget.fish;
+    final isFav = _favoritesManager.isFavorite(fish);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -60,6 +70,31 @@ class DetailScreen extends StatelessWidget {
                           ),
                           child: const Icon(Icons.share,
                               color: Color(0xFF0D1B4C), size: 20),
+                        ),
+                      ),
+                      // Favorite button
+                      Positioned(
+                        top: MediaQuery.of(context).padding.top + 8,
+                        right: 64,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _favoritesManager.toggleFavorite(fish);
+                            });
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: isFav ? Colors.red : const Color(0xFF0D1B4C),
+                              size: 20,
+                            ),
+                          ),
                         ),
                       ),
                     ],

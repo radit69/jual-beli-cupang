@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/cart_manager.dart';
 import 'home_screen.dart';
 import 'catalog_screen.dart';
 import 'cart_screen.dart';
@@ -13,19 +14,86 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+  String _selectedCatalogFilter = 'All';
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const CatalogScreen(),
-    const CartScreen(),
-    const ProfileScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    CartManager().addListener(_handleCartChange);
+  }
 
-  Widget _buildActiveIcon(IconData icon) {
+  @override
+  void dispose() {
+    CartManager().removeListener(_handleCartChange);
+    super.dispose();
+  }
+
+  void _handleCartChange() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  List<Widget> get _screens => [
+        HomeScreen(
+          onCategorySelected: (category) {
+            setState(() {
+              _selectedCatalogFilter = category;
+              _currentIndex = 1;
+            });
+          },
+        ),
+        CatalogScreen(
+          initialFilter: _selectedCatalogFilter,
+          onFilterChanged: (filter) {
+            _selectedCatalogFilter = filter;
+          },
+        ),
+        const CartScreen(),
+        const ProfileScreen(),
+      ];
+
+  Widget _buildActiveIcon(IconData icon, {bool isCart = false}) {
+    final cartCount = CartManager().items.length;
+    Widget iconWidget = Icon(icon, size: 24, color: const Color(0xFF0D1B4C));
+    if (isCart && cartCount > 0) {
+      iconWidget = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          iconWidget,
+          Positioned(
+            top: -4,
+            right: -6,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 16,
+                minHeight: 16,
+              ),
+              child: Center(
+                child: Text(
+                  '$cartCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 24, color: const Color(0xFF0D1B4C)),
+        iconWidget,
         const SizedBox(height: 4),
         Container(
           width: 4,
@@ -39,11 +107,47 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
-  Widget _buildInactiveIcon(IconData icon) {
+  Widget _buildInactiveIcon(IconData icon, {bool isCart = false}) {
+    final cartCount = CartManager().items.length;
+    Widget iconWidget = Icon(icon, size: 24, color: Colors.grey.shade400);
+    if (isCart && cartCount > 0) {
+      iconWidget = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          iconWidget,
+          Positioned(
+            top: -4,
+            right: -6,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 16,
+                minHeight: 16,
+              ),
+              child: Center(
+                child: Text(
+                  '$cartCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 24, color: Colors.grey.shade400),
+        iconWidget,
         const SizedBox(height: 8), // 4 height + 4 dot height = 8 to align perfectly
       ],
     );
@@ -88,8 +192,8 @@ class _MainNavigationState extends State<MainNavigation> {
               label: 'Catalog',
             ),
             BottomNavigationBarItem(
-              icon: _buildInactiveIcon(Icons.shopping_cart_outlined),
-              activeIcon: _buildActiveIcon(Icons.shopping_cart),
+              icon: _buildInactiveIcon(Icons.shopping_cart_outlined, isCart: true),
+              activeIcon: _buildActiveIcon(Icons.shopping_cart, isCart: true),
               label: 'Cart',
             ),
             BottomNavigationBarItem(
